@@ -33,8 +33,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText editTextFiltroBusqueda;
     private Button buttonBuscar;
     private Button buttonAgregar;
-    private RecyclerView recyclerViewCategorias;
-    private ArrayList<Contactos> contactosList;
+    private RecyclerView recyclerViewContactos;
+    private JSONArray jsonArrayContactos;
     private WebServices webServices = new WebServices();
 
     @Override
@@ -46,7 +46,6 @@ public class MainActivity extends AppCompatActivity {
         setInitComponents();
         addActionButtons();
         addContactList();
-        setContactosAdapter();
     }
 
     /**
@@ -61,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
         buttonBuscar.setOnClickListener(view -> {
             if (editTextFiltroBusqueda.getText() != null) {
                 addContactList();
-                setContactosAdapter();
             }
         });
     }
@@ -72,28 +70,18 @@ public class MainActivity extends AppCompatActivity {
         editTextFiltroBusqueda = findViewById(R.id.editTextFiltroBusqueda);
         buttonBuscar = findViewById(R.id.buttonBuscar);
         buttonAgregar = findViewById(R.id.buttonAgregar);
-        recyclerViewCategorias = findViewById(R.id.recyclerViewContactos);
-        recyclerViewCategorias.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewContactos = findViewById(R.id.recyclerViewContactos);
+        recyclerViewContactos.setLayoutManager(new LinearLayoutManager(this));
     }
 
     private void addContactList(){
-        contactosList = new ArrayList<>();
         RequestQueue queue = Volley.newRequestQueue(this);
-
         StringRequest request = new StringRequest(Request.Method.POST, webServices.urlWebServices, response -> {
             try {
                 JSONObject json = new JSONObject(response);
-                JSONArray jsonArray = json.getJSONArray("resultado");
-
-                for (int i = 0; i<jsonArray.length(); i++) {
-                    JSONObject categoria = jsonArray.getJSONObject(i);
-                    contactosList.add(new Contactos(
-                            Integer.parseInt(categoria.getString("id")),
-                            categoria.getString("nombre"),
-                            categoria.getString("telefono")
-                    ));
-                }
-
+                jsonArrayContactos = json.getJSONArray("resultado");
+                ContactosAdapter adapter = new ContactosAdapter(jsonArrayContactos, this);
+                recyclerViewContactos.setAdapter(adapter);
             }catch (Exception e){
                 Log.e("Error", e.getMessage());
             }
@@ -111,14 +99,6 @@ public class MainActivity extends AppCompatActivity {
         };
 
         queue.add(request);
-
-        for (Contactos contacto:contactosList) {
-            Toast.makeText(this, contacto.getNombre(), Toast.LENGTH_SHORT).show();
-        }
     }
 
-    private void setContactosAdapter() {
-        ContactosAdapter adapter = new ContactosAdapter(contactosList, this);
-        recyclerViewCategorias.setAdapter(adapter);
-    }
 }
