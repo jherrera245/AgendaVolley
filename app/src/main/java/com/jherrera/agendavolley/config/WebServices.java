@@ -4,6 +4,6 @@ public class WebServices {
     public String urlWebServices = "";
 
     public WebServices() {
-        this.urlWebServices = "http://192.168.69.191:8080/webservice/webservice.php";
+        this.urlWebServices = "http://192.168.0.7:80/webservice/webservice.php";
     }
 }
