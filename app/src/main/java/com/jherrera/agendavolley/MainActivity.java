@@ -1,16 +1,16 @@
 package com.jherrera.agendavolley;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -19,12 +19,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.jherrera.agendavolley.config.WebServices;
 import com.jherrera.agendavolley.controllers.ContactosAdapter;
-import com.jherrera.agendavolley.models.Contactos;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,29 +74,38 @@ public class MainActivity extends AppCompatActivity {
 
     private void addContactList(){
         RequestQueue queue = Volley.newRequestQueue(this);
-        StringRequest request = new StringRequest(Request.Method.POST, webServices.urlWebServices, response -> {
-            try {
-                JSONObject json = new JSONObject(response);
-                jsonArrayContactos = json.getJSONArray("resultado");
-                ContactosAdapter adapter = new ContactosAdapter(jsonArrayContactos, this);
-                recyclerViewContactos.setAdapter(adapter);
-            }catch (Exception e){
-                Log.e("Error", e.getMessage());
-            }
-        }, error -> {
-            Toast.makeText(this, "Error "+error.getMessage(), Toast.LENGTH_LONG).show();
-        }){
-            @Nullable
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("accion", "listar");
-                params.put("filtro", editTextFiltroBusqueda.getText().toString());
-                return params;
-            }
-        };
+        try {
+            StringRequest request = new StringRequest(Request.Method.POST, webServices.urlWebServices, response -> {
+                try {
+                    JSONObject json = new JSONObject(response);
+                    jsonArrayContactos = json.getJSONArray("resultado");
+                    ContactosAdapter adapter = new ContactosAdapter(jsonArrayContactos, this);
+                    recyclerViewContactos.setAdapter(adapter);
+                }catch (Exception e){
+                    Log.e("Error", e.getMessage());
+                }
+            }, error -> {
+                Toast.makeText(this, "Error "+error.getMessage(), Toast.LENGTH_LONG).show();
+            }){
+                @Nullable
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+                    Map<String, String> params = new HashMap<>();
+                    params.put("accion", "listar");
+                    params.put("filtro", editTextFiltroBusqueda.getText().toString());
+                    return params;
+                }
+            };
 
-        queue.add(request);
+            queue.add(request);
+        }catch (Exception e) {
+            Toast.makeText(this, "Error en tiempo de ejecución"+e.getMessage(), Toast.LENGTH_LONG).show();
+        }
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        addContactList();
+    }
 }
